@@ -1,0 +1,253 @@
+---
+title: "Analyzing the Current Labor Shortage: Part 1"
+author: "Catherine Hyman"
+date: "10/17/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse) 
+library(readxl) #read excel data
+library(lubridate) #library for dates
+library(maps) 
+```
+# Background
+There is currently a labor shortage going on not only in the US, but all around the world. For instance, many news sources are reporting on the lack of truck drivers and transport workers to move shipments around nationally, post maritime shipping. As a result, many ships are sitting duck at the dock of Laguna Beach Port. This poses substantial challenges for companies due to operational gridlocks, as well as customers who bear the burden of price increases and longer delivery time, altogether negative customer experience. Due to the pandemic and narrowing constraints on operational and financial states, workers are getting laid off or leaving voluntarily. The latter is a psychological effect that is hard to quantify, thus, is beyond the scope of the project though its significance is substantial. Not only does the pandemic create challenges on operations, the state of globalization is also at risk due to restrictions in capital movements. In a recent letter to the United Nations, the International Air Transport Association, International Chamber of Shipping, and International Transport Workers' Federation made a plea to the UN for the reinstatement of freedom of movement for transport workers. In it, they also warn of a possible global supply chain collapse as the toll on transport workers continues. 
+
+Given this pressing operational issue that could affect multiple market participants, we are primarily in conducting exploratory data analysis on the causes of this labor shortage, and attempt to address the resulting implications. While doing so, we are also attempting to prove the existence of the labor shortage, as many news sources report on debates whether the shortage actually exists.
+
+Beyond exploring the macro-environment, we also employ a micro focus by looking at job openings within multiple industries. This outlines our attempt to determine whether the labor shortage exists because lack of jobs for workers to work at, or lack of people to fill those jobs.
+
+Essential questions:
+
+  1) Does the labor shortage exist? 
+
+  2) What factors have contributed to the shortage?
+
+  3) How have job openings change within select industries? Does the labor shortage exist due to the lack of jobs for workers to be employed in, or lack of workers willing to fill those jobs?
+
+  4) Based on results of the first 3 questions, what potential implications could this have? -- *Note that this is our beliefs of what the potential impact would be: this is not part of our project, but rather our speculation/conclusions*
+
+
+## Broad Research Question 
+The goal of this project is to investigate the present-day labor shortage in the United States. We have split this project into three parts. The first part will investigate trends in unemployment data. The second will analyze job openings by industry. The third will look into underlying causes of the labor shortage that go beyond the COVID-19 pandemic and will examine possible consequences of the shortage. 
+
+This RMarkdown file will focus on the first part of this project: the investigation of unemployment data. With this investigation I am to answer the following questions: What does unemployment look like after COVID-19? Do stimulus checks have any impact on unemployment rates? How does unemployment vary by education? How does unemployment vary by region? How quickly has unemployment recovered from the shock of the March 2020 quarantine? Are their anomalies in the geographic trends? What can explain these anomalies?
+
+Bureau of Labor Statistics’ official definition of “Unemployed”
+    
+  1) Did not have a job at the time of the survey 
+    
+  2) Made at least one specific active effort to find a job during the prior 4 weeks 
+  
+  3) Were available to work 
+  
+  4) All those who were not working but were waiting to be called back from former employers after being laid off
+    
+    
+Unemployment Rate = Unemployed / Labor Force 
+
+For this section of the project, I used six data sets from the Bureau of Labor Statistics. The first data set shows the seasonally adjusted unemployment rate in the United States measured by Unemployed / Labor Force. The next four data sets divide the seasonally adjusted unemployment rate by highest completed education. The sixth data set groups unemployment by US county. 
+
+# Section 1
+Download combined total seasonally adjusted unemployment data from [Bureau of Labor Statistics](https://data.bls.gov/cgi-bin/surveymost?ln) along with data for specific groups of people separated by highest completed education. This first code chunk creates a condensed data set that combines all of the data relating to the first section of this project.
+
+In this first code chunk, I will repeat the same process to organize 5 data sets from the BLS. Each time I will read and store the data. Initially, the data is organized in a table that has month rows and year columns. Because I will be combining these data sets, I need to gather the data so that it is formatted with a row for every single month from 2011-2021. This will leave me with 5 data sets, each with three columns, one with the year, one with the month and one with the value.
+
+```{r combine_and_gather_edu_data}
+#download and gather total data
+total<-read_excel("SeriesReport-20211013103622_022552.xlsx", skip=10)
+total<-pivot_longer(total, c(Jan:Dec))
+total<-rename(total, month=name, "Total"=value)
+
+#download and gather less than hs diploma data
+less_than_hs_diploma<-read_excel("SeriesReport-20211013103625_bd083c.xlsx", skip=11)
+less_than_hs_diploma<-pivot_longer(less_than_hs_diploma, c(Jan:Dec))
+less_than_hs_diploma<-rename(less_than_hs_diploma, month=name, "Less than high school diploma" = value)
+
+#download and gather hs grad data
+hs_grad_no_college<-read_excel("SeriesReport-20211013103628_0b08e9.xlsx", skip=11)
+hs_grad_no_college<-pivot_longer(hs_grad_no_college, c(Jan:Dec))
+hs_grad_no_college<-rename(hs_grad_no_college, month=name, "High school graduate, no college" = value)
+
+#download and gather some college or associate degree data
+some_college_or_associate_degree<-read_excel("SeriesReport-20211013103630_432a4d.xlsx", skip=11)
+some_college_or_associate_degree<-pivot_longer(some_college_or_associate_degree, c(Jan:Dec))
+some_college_or_associate_degree<-rename(some_college_or_associate_degree, month=name, "Some college or associate degree" = value)
+
+#download and ba or higher data 
+bachelor_or_higher<-read_excel("SeriesReport-20211013103633_3a6146.xlsx", skip=11)
+bachelor_or_higher<-pivot_longer(bachelor_or_higher, c(Jan:Dec))
+bachelor_or_higher<-rename(bachelor_or_higher, month=name, "Bachelor's degree or higher" = value)
+```
+
+
+After organizing my 5 data sets in a way that will allow me to easily combine them, the next step is joining the data. I will create a new data set entitled complete_data that joins all 5 data sets. I will gather this data set as well so that I have a column called "name" that specifies which data set a given value belongs to. Under the name column, there will be "Total", "Less than high school diploma","High school graduate, no college","Some college or associate degree", and "Bachelor's degree or higher". My complete_data data set will have 5 columns: Year (numeric), month (character), name (factor), value (numeric), date (Date). 
+
+
+```{r}
+
+#join all data sets 
+complete_data<-full_join(total,less_than_hs_diploma, c("Year"="Year", "month"="month"))
+complete_data<-full_join(complete_data, hs_grad_no_college, c("Year"="Year", "month"="month"))
+complete_data<-full_join(complete_data, some_college_or_associate_degree, c("Year"="Year", "month"="month"))
+complete_data<-full_join(complete_data, bachelor_or_higher, c("Year"="Year", "month"="month"))
+
+
+complete_data<-na.omit(complete_data)
+
+#remove unused data sets now that they are combined 
+remove(total, less_than_hs_diploma,hs_grad_no_college,some_college_or_associate_degree,bachelor_or_higher)
+
+#gather data 
+complete_data<-pivot_longer(complete_data, c("Total":"Bachelor's degree or higher"))
+complete_data$value<-as.numeric(complete_data$value)
+
+#use date class
+complete_data<-mutate(complete_data, date=paste(Year,month))
+complete_data$date<-ymd(complete_data$date, truncated=1)
+
+#relevel data to make logical sence (ascending order of education completed)
+complete_data <- mutate(complete_data, name = fct_relevel(name,"Total", "Less than high school diploma","High school graduate, no college","Some college or associate degree","Bachelor's degree or higher"))
+```
+
+Create a plot that shows trends in unemployment from 2011-present grouped by highest completed education. The data shows a massive spike of unemployment in March 2020 due to the initial period of quarantine and the uncertainty. There is a strong correlation between relatively high unemployment and fewer years of education.
+
+```{r}
+ggplot(complete_data, aes(x=date, y=value/100)) + 
+  geom_line(aes(group=name, color=name))+
+  theme_minimal() +
+  scale_color_brewer(palette = "Set1")+
+  labs(title = "Unemployment Rates by Education Level", x="Date", y="Unemployment Rate", color="Education Level") + 
+  scale_y_continuous(labels=scales::percent_format(), expand=c(0,.02)) 
+```
+
+The following plot "zooms in" on the previously plotted data in order to examine the data leading up to COVID-19 (beginning in January 2019) and what has happened since the pandemic. Thus, this graph will span from January 2019 until September 2021 (the most updated data when I downloaded the excel files). This graph shows how people with higher completed education had jobs that were less responsive to COVID-19, meaning that they were able to recover from the pandemic's effect on the job market with more ease than people with less education. 
+
+```{r}
+covid_time_period<-filter(complete_data, Year>=2019)
+
+ggplot(covid_time_period, aes(x=date, y=value/100)) + 
+  geom_line(aes(group=name, color=name))+
+  theme_minimal() +
+  scale_color_brewer(palette = "Set1")+
+  labs(title = "Unemployment Rates by Education Level", x="Date", y="Unemployment Rate", color="Education Level") + 
+  scale_y_continuous(labels=scales::percent_format(), expand = c(0,.02)) 
+
+```
+
+The final plot in this first section examines total unemployment over the COVID-19 period to see how the economy recovered as a whole. I added horizontal lines to demarcate the roll-out of stimulus checks. I used the following dates: April 1, 2020, December 1,2020, and March 1, 2021. I used the key_glyph attribute to specify the scaling for my legend because the combination of geom_line and geom_vline in the legend created + in the legend. 
+
+```{r total}
+total_isolated<-filter(complete_data, name=="Total", Year>=2019)
+ggplot(total_isolated, aes(x=date, y=value/100)) + 
+  geom_line(aes(group=name, color=name))+
+  theme_minimal() +
+  geom_vline(aes(xintercept=ymd("2020-04-01"), color="Stimulus"), key_glyph="path")+ 
+  geom_vline(aes(xintercept=ymd("2020-12-01"), color = "Stimulus"),key_glyph="path")+ 
+  geom_vline(aes(xintercept=ymd("2021-03-01"), color = "Stimulus"),key_glyph="path")+ 
+  scale_color_manual(values=c("Stimulus"="seagreen3","Total"="red"))+
+  labs(title = "Total Unemployment Rate", x="Date", y="Unemployment Rate", color="Key") + 
+  scale_y_continuous(labels=scales::percent_format(),expand = c(0,.04)) 
+```
+
+# Section 2
+This chunk reads and manipulates data from the [Bureau of Labor Statustics Local Area Unemployment](https://www.bls.gov/lau/#tables) that focuses on county-wide unemployment rates. I had success joining the data to the built-in county map data by FIPS code. I ultimately settled on binning the data in order to make the discrepancies and extremes more apparent. I focused on August 2020 and August 2021. I chose August 2020 intentionally because the labor market was in the midst of the recovery from the March 2020 recession. I did not choose March 2020 as my marker because some industries would have not been responsive to the warnings of the pandemic. 5 months after the start of quarantine has given the labor market sufficient time to settle (in the sense that people understand the initial effects of COVID on the retail economy and have grown accustomed to working from home). I juxtaposed this with august 2021 in order to control for seasonal trends. I found Maine to be a specifically interesting case, thus I created two additional subsections of data that focused solely on Maine counties during these two time periods. 
+
+In the following code chunk I do several things: 
+
+1) I store the BLS data to US_county_data. The BLS Data is very messy when I first download it. It has several helpful variables that I wish to save, such as FIPS...2 which tells the state FIPS code, FIPS...3 which tells the county FIPS code, ...4 which tells location, ...5 which tells the date, and "ment Rate" which tells the unemployment rate. When I tidy my data I will first paste the two FIPS variables together to have the county FIPS code. Then I will rename the variables. My new variables will now be fips, location, date, and rate. Although location and fips essentially tell the same thing, I will preserve the location variable in my final data in order to double check to see that I combined everything correctly. 
+
+2) The next thing that I do in this code chunk is that I store the R county and state map data in all_counties and states respectively. I create a new variable entitled polyname that pastes state and county. This variable will match the polyname variable in the county.fips data. This will help me seemlessly add FIPS codes to the the all_counties data, which will allow me to join the US_county_data with the all_counties data to be plotted in my choropleth. 
+
+3) The third thing that I do in this section is create subsets of my data for the subsequent choropleths that I will be making: August 2020, August 2021, Maine in August 2020, Maine in August 2021. 
+
+```{r modifications for choropleth data, include=FALSE}
+#load fips codes from maps library 
+data("county.fips") #fips codes 
+
+#store BLS data and county and state map data  
+US_county_data<-read_excel("laucntycur14.xlsx", skip=3)
+all_counties<-map_data("county")
+states<-map_data("state")
+all_counties$polyname<-paste0(all_counties$region,",",all_counties$subregion)
+#connect state and county fips codes 
+US_county_data$fips<- paste0(US_county_data$FIPS...2,US_county_data$FIPS...3)
+US_county_data<-select(US_county_data, fips, location=...4, date=...5, rate="ment Rate")
+US_county_data$fips<-as.numeric(US_county_data$fips)
+#join data 
+all_counties<-left_join(all_counties, county.fips, "polyname"="polyname")
+all_counties<-left_join(all_counties, US_county_data, "fips"="fips")
+#filter maine data 
+maine_data<-filter(all_counties, region=="maine")
+maine_data<-select(maine_data, long, lat, group, order, polyname, date,rate)
+
+#select necessary variables 
+all_counties<-select(all_counties, long, lat, group, order, polyname, date,rate)
+
+#filter aug 21 data and bin data to make it discrete rather than continuous 
+all_counties_aug21<-filter(all_counties,date=="Aug-21 p")
+all_counties_aug21$rate<-as.numeric(all_counties_aug21$rate)
+all_counties_aug21<-mutate(all_counties_aug21,"rates"=cut(rate,breaks=c(0,2,4,6,8,10,12,14,30)))
+
+#filter aug 20 data and bin data to make it discrete rather than continuous  
+all_counties_aug20<-filter(all_counties,date=="Aug-20")
+all_counties_aug20$rate<-as.numeric(all_counties_aug20$rate)
+all_counties_aug20<-mutate(all_counties_aug20,"rates"=cut(rate,breaks=c(0,2,4,6,8,10,12,14,30)))
+
+maine_aug20<-filter(maine_data,date=="Aug-20")
+maine_aug20$rate<-as.numeric(maine_aug20$rate)
+
+maine_aug21<-filter(maine_data,date=="Aug-21 p")
+maine_aug21$rate<-as.numeric(maine_aug21$rate)
+
+
+```
+
+
+This choropleth shows the August 2020 unemployment rate by US county. Make special note of areas with specifically high unemployment rates. For example, Los Angeles County, CA and Cook County IL have particularly high unemployment. Some counties with particularly high unemployment rates are reservations. The fill for geom_polygon is rates —the binned data— and not rate —the continuous data. 
+
+```{r plot aug2020}
+
+ggplot()+
+  geom_polygon(data=all_counties_aug20,aes(x=long, y=lat, group = group, fill=rates))+
+  theme_void()+
+  scale_fill_brewer(palette = "Reds")+
+  coord_map()+
+  geom_path(data =states, aes(x = long, y = lat, group = group)) +
+  labs(title="August 2020 Unemployment rate per US County",fill="Unemployment\nRate (%)")
+
+```
+
+This choropleth shows the August 2021 unemployment rate by US county. Make special note of areas that have experienced significant change in unemployment between August 2020-August 2021.
+
+```{r plot aug2021}
+
+ggplot()+
+  geom_polygon(data=all_counties_aug21,aes(x=long, y=lat, group = group, fill=rates))+
+  theme_void()+
+  scale_fill_brewer(palette = "Reds")+
+  coord_map()+
+  geom_path(data =states, aes(x = long, y = lat, group = group)) +
+  labs(title="August 2021 Unemployment rate per US County", fill="Unemployment\nRate (%)")
+```
+
+This choropleth focuses on the data for Maine. I found the trend in Maine to be interesting because Maine was the only US state that experienced an overall increase in unemployment between Aug 2020 and Aug 2021. I wanted to look more specifically at Maine counties to examine industry trends.  
+```{r}
+ggplot(maine_aug20)+
+  geom_polygon(aes(x=long, y=lat, group = group, fill=rate))+
+  theme_void()+
+  coord_map()+
+  scale_fill_gradient2(low="aquamarine3", mid="lightblue", midpoint = 3.5, high = "navy", limits=c(0,7))+
+  labs(title="August 2020 Unemployment rate per Maine County", fill="Unemployment\nRate (%)")
+```
+
+```{r}
+ggplot(maine_aug21)+
+  geom_polygon(aes(x=long, y=lat, group = group, fill=rate))+
+  theme_void()+
+  coord_map()+
+  scale_fill_gradient2(low="aquamarine3", mid="lightblue", midpoint = 3.5, high = "navy", limits=c(0,7))+
+  labs(title="August 2021 Unemployment rate per Maine County", fill="Unemployment\nRate (%)")
+```
