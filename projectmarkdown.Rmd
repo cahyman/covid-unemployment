@@ -1,5 +1,5 @@
 ---
-title: "Analyzing the Current Labor Shortage: Part 1"
+title: "Analyzing the Covid-19 Unemployment"
 author: "Catherine Hyman"
 date: "10/17/2021"
 output: html_document
@@ -13,9 +13,7 @@ library(lubridate) #library for dates
 library(maps) 
 ```
 ## Broad Research Question 
-The goal of this project is to investigate the present-day labor shortage in the United States. We have split this project into three parts. The first part will investigate trends in unemployment data. The second will analyze job openings by industry. The third will look into underlying causes of the labor shortage that go beyond the COVID-19 pandemic and will examine possible consequences of the shortage. 
-
-This RMarkdown file will focus on the first part of this project: the investigation of unemployment data. With this investigation I am to answer the following questions: What does unemployment look like after COVID-19? Do stimulus checks have any impact on unemployment rates? How does unemployment vary by education? How does unemployment vary by region? How quickly has unemployment recovered from the shock of the March 2020 quarantine? Are their anomalies in the geographic trends? What can explain these anomalies?
+The goal of this project is to investigate trends in unemployment data. This RMarkdown file will focus on the first part of this project: the investigation of unemployment data. With this investigation I am to answer the following questions: What does unemployment look like after COVID-19? Do stimulus checks have any impact on unemployment rates? How does unemployment vary by education? How does unemployment vary by region? How quickly has unemployment recovered from the shock of the March 2020 quarantine? Are their anomalies in the geographic trends? What can explain these anomalies?
 
 Bureau of Labor Statistics’ official definition of “Unemployed”
     
