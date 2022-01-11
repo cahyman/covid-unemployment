@@ -12,24 +12,6 @@ library(readxl) #read excel data
 library(lubridate) #library for dates
 library(maps) 
 ```
-# Background
-There is currently a labor shortage going on not only in the US, but all around the world. For instance, many news sources are reporting on the lack of truck drivers and transport workers to move shipments around nationally, post maritime shipping. As a result, many ships are sitting duck at the dock of Laguna Beach Port. This poses substantial challenges for companies due to operational gridlocks, as well as customers who bear the burden of price increases and longer delivery time, altogether negative customer experience. Due to the pandemic and narrowing constraints on operational and financial states, workers are getting laid off or leaving voluntarily. The latter is a psychological effect that is hard to quantify, thus, is beyond the scope of the project though its significance is substantial. Not only does the pandemic create challenges on operations, the state of globalization is also at risk due to restrictions in capital movements. In a recent letter to the United Nations, the International Air Transport Association, International Chamber of Shipping, and International Transport Workers' Federation made a plea to the UN for the reinstatement of freedom of movement for transport workers. In it, they also warn of a possible global supply chain collapse as the toll on transport workers continues. 
-
-Given this pressing operational issue that could affect multiple market participants, we are primarily in conducting exploratory data analysis on the causes of this labor shortage, and attempt to address the resulting implications. While doing so, we are also attempting to prove the existence of the labor shortage, as many news sources report on debates whether the shortage actually exists.
-
-Beyond exploring the macro-environment, we also employ a micro focus by looking at job openings within multiple industries. This outlines our attempt to determine whether the labor shortage exists because lack of jobs for workers to work at, or lack of people to fill those jobs.
-
-Essential questions:
-
-  1) Does the labor shortage exist? 
-
-  2) What factors have contributed to the shortage?
-
-  3) How have job openings change within select industries? Does the labor shortage exist due to the lack of jobs for workers to be employed in, or lack of workers willing to fill those jobs?
-
-  4) Based on results of the first 3 questions, what potential implications could this have? -- *Note that this is our beliefs of what the potential impact would be: this is not part of our project, but rather our speculation/conclusions*
-
-
 ## Broad Research Question 
 The goal of this project is to investigate the present-day labor shortage in the United States. We have split this project into three parts. The first part will investigate trends in unemployment data. The second will analyze job openings by industry. The third will look into underlying causes of the labor shortage that go beyond the COVID-19 pandemic and will examine possible consequences of the shortage. 
 
